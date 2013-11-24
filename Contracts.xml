@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Exchange>
+  <Liffe>
+    <contracts>
+      <contract>DMF:CA 3M</contract>
+      <contract>EBF:FGBL Dec 13</contract>
+    </contracts>
+  </Liffe>
+  <Eurex>
+    <contracts>
+    </contracts>
+
+  </Eurex>
+  <CME>
+    <contracts>
+    </contracts>
+
+  </CME>
+  <LME>
+    <contracts>
+
+    </contracts>
+
+  </LME>
+</Exchange>
+

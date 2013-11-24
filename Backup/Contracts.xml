@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Exchange>
+  <Liffe>
+    <contracts>
+      <contract>LLF:Z   Dec 11</contract>
+    </contracts>
+  </Liffe>
+  <Eurex>
+    <contracts>
+
+    </contracts>
+
+  </Eurex>
+  <CME>
+    <contracts>
+      <contract>CGCF:6B Dec 11</contract>
+      <contract>CGCF:6A Dec 11</contract>
+      <contract>CGCF:6E Dec 11</contract>
+      <contract>CGCF:6J Dec 11</contract>
+      <contract>CGCF:6S Dec 11</contract>
+      <contract>CGCF:6C Dec 11</contract>
+    </contracts>
+
+  </CME>
+  <LME>
+    <contracts>
+
+    </contracts>
+
+  </LME>
+</Exchange>
+

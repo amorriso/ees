@@ -1,0 +1,8 @@
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.exe
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.pdb
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.Form1.resources
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.Properties.Resources.resources
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\ClientAPI.csproj.GenerateResource.Cache
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EESTesterClientAPI.exe
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EESTesterClientAPI.pdb

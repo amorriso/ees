@@ -1,0 +1,63 @@
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.DepthScreen.resources
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.Form1.resources
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.Properties.Resources.resources
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESClientAPI.csproj.GenerateResource.Cache
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EESTesterClientAPI.exe
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EESTesterClientAPI.pdb
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EasyScreen.SOA2.SqlSupport.dll
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EasyScreen.SOA2.Logging.LogEntries.dll
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EasyScreen.SOA2.GenericPersistence.dll
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EasyScreen.SOA2.SqlSupport.BOExchange.dll
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\DotNetUtils.dll
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EasyScreen.SOA2.Exceptions.dll
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EasyScreen.SOA2.SqlSupport.Soda.dll
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\ClientAPI.xml
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\DotNetUtils.xml
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.exe
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\obj\Debug\EESTesterClientAPI.pdb
+C:\Documents and Settings\jharper\My Documents\Visual Studio 2008\Projects\ExampleEESClientAPI\EESTesterClientAPI\bin\Debug\EESTesterClientAPI.exe.config
+C:\EESClientAPIExample\bin\Debug\EESTesterClientAPI.exe.config
+C:\EESClientAPIExample\bin\Debug\EESTesterClientAPI.exe
+C:\EESClientAPIExample\bin\Debug\EESTesterClientAPI.pdb
+C:\EESClientAPIExample\obj\Debug\ResolveAssemblyReference.cache
+C:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.DepthScreen.resources
+C:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.Form1.resources
+C:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.Properties.Resources.resources
+C:\EESClientAPIExample\obj\Debug\EESClientAPI.csproj.GenerateResource.Cache
+C:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.exe
+C:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.pdb
+C:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.ReviseOrder.resources
+D:\EESClientAPIExample\bin\Debug\EESTesterClientAPI.exe.config
+D:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.exe
+D:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.pdb
+D:\EESClientAPIExample\bin\Debug\EESTesterClientAPI.exe
+D:\EESClientAPIExample\bin\Debug\EESTesterClientAPI.pdb
+D:\EESClientAPIExample\obj\Debug\EESClientAPI.csprojResolveAssemblyReference.cache
+D:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.DepthScreen.resources
+D:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.Form1.resources
+D:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.Properties.Resources.resources
+D:\EESClientAPIExample\obj\Debug\EESTesterClientAPI.ReviseOrder.resources
+D:\EESClientAPIExample\obj\Debug\EESClientAPI.csproj.GenerateResource.Cache
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EESTesterClientAPI.exe.config
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESTesterClientAPI.exe
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESTesterClientAPI.pdb
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EESTesterClientAPI.exe
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EESTesterClientAPI.pdb
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\ClientAPI.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\DotNetUtils.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.GenericRequest.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.ExceptionHandling.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.GenericPersistence.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.Logging.LogEntries.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.SqlSupport.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.Exceptions.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.SqlSupport.BOExchange.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\EasyScreen.SOA2.SqlSupport.Soda.dll
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\bin\Debug\ClientAPI.xml
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESClientAPI.csprojResolveAssemblyReference.cache
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESTesterClientAPI.DepthScreen.resources
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESTesterClientAPI.Form1.resources
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESTesterClientAPI.Properties.Resources.resources
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESTesterClientAPI.ReviseOrder.resources
+C:\cygwin\home\anthony.morrison\testing_dj\gareth\EESClientAPIExample\obj\Debug\EESClientAPI.csproj.GenerateResource.Cache
