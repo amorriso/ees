@@ -309,11 +309,45 @@ namespace EESTesterClientAPI
 
         private void updateOptionDb(string future_id, double value)
         {
+
+            double atm_strike;
+            List<double> strikes = new List<double>();
+            List<string> ees_mnemonics = new List<string>();
+            int num_otm_options;
+            double val;
+            string mnemonic = null;
+
             DataTable optiondefs = _future_ids_2_optiondefs[future_id];
             foreach (DataRow row in optiondefs.Rows)
             {
-                double atm_strike = return_ATM_strike(value, (double)row["strike_interval"]);
-                //List<double>
+                strikes.Clear();
+                ees_mnemonics.Clear();
+                atm_strike = return_ATM_strike(value, (double)row["strike_interval"]);
+                num_otm_options = (int)row["number_of_OTM_options"] / 2;
+                val = atm_strike - num_otm_options * (double)row["strike_interval"];
+
+                int counter = 0;
+                while (true)
+                {
+                    strikes.Add(val);
+                    mnemonic = row["easyscreen_prefix"] + " " + ((int)(val*(double)row["price_movement"])).ToString();
+                    if (val < atm_strike)
+                    {
+                        mnemonic += "p";
+                    }
+                    else
+                    {
+                        mnemonic += "c";
+                    }
+                    mnemonic += " 0";
+                    ees_mnemonics.Add(mnemonic);
+                    val += (double)row["strike_interval"];
+                    counter += 1;
+                    if (counter >= num_otm_options*2)
+                    {
+                        break;
+                    }
+                }
 
             }
 
