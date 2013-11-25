@@ -27,6 +27,7 @@ namespace EESTesterClientAPI
         //jhlogs log = null;
         Dictionary<string,ulong> _orderList = null;
 
+        private bool _subscribed = false;
         private SQLiteConnection _db_cnn;
         private DataTable _future_table = new DataTable();
         private Dictionary<string, DataTable> _future_ids_2_optiondefs = new Dictionary<string, DataTable>();
@@ -283,7 +284,7 @@ namespace EESTesterClientAPI
                 command.Parameters.AddWithValue("id", id);
                 command.Parameters.AddWithValue("last_updated", Now.ToString("yyyy-MM-dd HH:mm:ss"));
                 command.ExecuteNonQuery();
-                updateOptionDb((string)id, (Bid + Ask)/2.0);
+                updateOptionDb(Convert.ToString(id), (Bid + Ask)/2.0);
             }
         }
 
@@ -293,7 +294,7 @@ namespace EESTesterClientAPI
             List<double> possible_atms = new List<double>();
             List<double> distance = new List<double>();
 
-            double val = (int)value - 2 * strike_interval;
+            double val = Convert.ToDouble(Convert.ToInt32(value)) - 2 * strike_interval;
             while (true)
             {
                 possible_atms.Add(val);
@@ -312,25 +313,28 @@ namespace EESTesterClientAPI
 
             double atm_strike;
             List<double> strikes = new List<double>();
-            List<string> ees_mnemonics = new List<string>();
+            HashSet<string> ees_mnemonics = new HashSet<string>();
             int num_otm_options;
             double val;
             string mnemonic = null;
+            double strike_interval;
 
             DataTable optiondefs = _future_ids_2_optiondefs[future_id];
             foreach (DataRow row in optiondefs.Rows)
             {
                 strikes.Clear();
                 ees_mnemonics.Clear();
-                atm_strike = return_ATM_strike(value, (double)row["strike_interval"]);
-                num_otm_options = (int)row["number_of_OTM_options"] / 2;
-                val = atm_strike - num_otm_options * (double)row["strike_interval"];
+                strike_interval = Convert.ToDouble(row["strike_interval"]);
+                atm_strike = return_ATM_strike(value, strike_interval);
+                num_otm_options = Convert.ToInt32(row["number_of_OTM_options"]) / 2;
+                val = atm_strike - num_otm_options * strike_interval;
 
                 int counter = 0;
                 while (true)
                 {
                     strikes.Add(val);
-                    mnemonic = row["easyscreen_prefix"] + " " + ((int)(val*(double)row["price_movement"])).ToString();
+                    mnemonic = row["easyscreen_prefix"] + " " + 
+                                        (Convert.ToInt32(val/Convert.ToDouble(row["price_movement"]))).ToString();
                     if (val < atm_strike)
                     {
                         mnemonic += "p";
@@ -341,13 +345,31 @@ namespace EESTesterClientAPI
                     }
                     mnemonic += " 0";
                     ees_mnemonics.Add(mnemonic);
-                    val += (double)row["strike_interval"];
+                    val += strike_interval;
                     counter += 1;
-                    if (counter >= num_otm_options*2)
+                    if (counter >= num_otm_options*2 + 1)
                     {
                         break;
                     }
                 }
+
+                SQLiteCommand command = new SQLiteCommand(_db_cnn);
+                command.CommandText = "SELECT * FROM marketdata_optioncontracts";
+                SQLiteDataReader reader = command.ExecuteReader();
+                _optioncontract_table.Load(reader);
+                reader.Close();
+
+                foreach (DataRow option in _optioncontract_table.Rows)
+                {
+                    if (!ees_mnemonics.Contains(option["easy_screen_mnemonic"].ToString()))
+                    {
+                        command.CommandText = "DELETE * FROM marketdata_optioncontracts WHERE id=:id";
+                        command.Parameters.AddWithValue("id", option["easy_screen_mnemonic"].ToString());
+                        command.ExecuteNonQuery();
+                    }
+
+                }
+
 
             }
 
@@ -419,7 +441,7 @@ namespace EESTesterClientAPI
             */
             // load the futures
             SQLiteCommand command = new SQLiteCommand(_db_cnn);
-            command.CommandText = "SELECT id, easyscreen_id, bid, bid_volume, ask, ask_volume, last_trade_value, last_trade_volume, last_updated, expiry_date FROM marketdata_future";
+            command.CommandText = "SELECT * FROM marketdata_future";
             SQLiteDataReader reader = command.ExecuteReader();
             _future_table.Load(reader);
             reader.Close();
@@ -430,6 +452,7 @@ namespace EESTesterClientAPI
                 if (diff <= 0)
                 {
                     // subscribe future
+                    string delete = r["easyscreen_id"].ToString();
                     Subscribe(r["easyscreen_id"].ToString());
 
                     // now find all the option defs based on subscribed future
@@ -439,7 +462,7 @@ namespace EESTesterClientAPI
                     DataTable table = new DataTable();
                     table.Load(reader);
                     reader.Close();
-                    _future_ids_2_optiondefs.Add(r["id"].ToString(), table.Clone());
+                    _future_ids_2_optiondefs.Add(r["id"].ToString(), table);
                 }
             }
             // load the options
@@ -474,7 +497,11 @@ namespace EESTesterClientAPI
 
         private void btnAutoSubscribe_Click(object sender, EventArgs e)
         {
-            _AutoSubscribe();
+            if (_subscribed == false)
+            {
+                _AutoSubscribe();
+            }
+            _subscribed = true;
         }
 
     }
