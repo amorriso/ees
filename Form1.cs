@@ -312,17 +312,21 @@ namespace EESTesterClientAPI
         {
 
             double atm_strike;
-            List<double> strikes = new List<double>();
             HashSet<string> ees_mnemonics = new HashSet<string>();
+            HashSet<string> registered_ees_mnemonics = new HashSet<string>();
+            Dictionary<string, string> ees_mnemonics2strike = new Dictionary<string, string>();
+            Dictionary<string, string> ees_mnemonics2bloomberg = new Dictionary<string, string>();
             int num_otm_options;
             double val;
             string mnemonic = null;
+            string bloomberg_postfix = null;
             double strike_interval;
+            SQLiteCommand command = new SQLiteCommand(_db_cnn);
+
 
             DataTable optiondefs = _future_ids_2_optiondefs[future_id];
             foreach (DataRow row in optiondefs.Rows)
             {
-                strikes.Clear();
                 ees_mnemonics.Clear();
                 strike_interval = Convert.ToDouble(row["strike_interval"]);
                 atm_strike = return_ATM_strike(value, strike_interval);
@@ -332,19 +336,20 @@ namespace EESTesterClientAPI
                 int counter = 0;
                 while (true)
                 {
-                    strikes.Add(val);
-                    mnemonic = row["easyscreen_prefix"] + " " + 
-                                        (Convert.ToInt32(val/Convert.ToDouble(row["price_movement"]))).ToString();
+                    bloomberg_postfix = (Convert.ToInt32(val/Convert.ToDouble(row["price_movement"]))).ToString();
                     if (val < atm_strike)
                     {
-                        mnemonic += "p";
+                        bloomberg_postfix += "p";
                     }
                     else
                     {
-                        mnemonic += "c";
+                        bloomberg_postfix += "c";
                     }
-                    mnemonic += " 0";
+                    bloomberg_postfix += " 0";
+                    mnemonic = row["easyscreen_prefix"] + " " + bloomberg_postfix;
                     ees_mnemonics.Add(mnemonic);
+                    ees_mnemonics2strike.Add(mnemonic, Convert.ToString(val));
+                    ees_mnemonics2bloomberg.Add(mnemonic, row["bloomberg_prefix"] + " " + bloomberg_postfix);
                     val += strike_interval;
                     counter += 1;
                     if (counter >= num_otm_options*2 + 1)
@@ -353,24 +358,66 @@ namespace EESTesterClientAPI
                     }
                 }
 
-                SQLiteCommand command = new SQLiteCommand(_db_cnn);
-                command.CommandText = "SELECT * FROM marketdata_optioncontracts";
+                command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE optiondefinition_id=:optiondefinition_id";
+                command.Parameters.AddWithValue("optiondefinition_id", Convert.ToInt32(row["id"]));                
                 SQLiteDataReader reader = command.ExecuteReader();
+                _optioncontract_table.Clear();
                 _optioncontract_table.Load(reader);
                 reader.Close();
 
+                // remove all options that we don't need to fetch anymore
                 foreach (DataRow option in _optioncontract_table.Rows)
                 {
                     if (!ees_mnemonics.Contains(option["easy_screen_mnemonic"].ToString()))
                     {
-                        command.CommandText = "DELETE * FROM marketdata_optioncontracts WHERE id=:id";
-                        command.Parameters.AddWithValue("id", option["easy_screen_mnemonic"].ToString());
+                        command.CommandText = "DELETE FROM marketdata_optioncontract WHERE id=:id";
+                        command.Parameters.AddWithValue("id", option["id"].ToString());
                         command.ExecuteNonQuery();
+                        try
+                        {
+                            CStructureDataStore StructureDS = _clientAPIManagement.GetStructureDataStore();
+                            CStructureItem pItem1 = StructureDS.FindOrCreateItem(option["easy_screen_mnemonic"].ToString());
+                            pItem1.UnregisterInterest();
+                        }
+                        catch
+                        {
+                            // don't worry about this failing.
+                        }
                     }
-
+                    else
+                    {
+                        registered_ees_mnemonics.Add(option["easy_screen_mnemonic"].ToString());
+                    }
                 }
+                foreach (string option_mnemonic in ees_mnemonics)
+                {
+                    if (!registered_ees_mnemonics.Contains(option_mnemonic))
+                    {
+                        command.CommandText = "INSERT INTO marketdata_optioncontract (optiondefinition_id, easy_screen_mnemonic, bloomberg_name, strike, bid, bid_volume, ask, ask_volume, value, last_trade_value, last_trade_volume, vol, delta, expiry_date, time_to_expiry, last_updated) VALUES (:optiondefinition_id, :easy_screen_mnemonic, :bloomberg_name, :strike, :bid, :bid_volume, :ask, :ask_volume, :value, :last_trade_value, :last_trade_volume, :vol, :delta, :expiry_date, :time_to_expiry, :last_updated)";
 
+                        command.Parameters.AddWithValue("optiondefinition_id", Convert.ToInt32(row["id"]));
+                        command.Parameters.AddWithValue("easy_screen_mnemonic", option_mnemonic);
+                        command.Parameters.AddWithValue("bloomberg_name", ees_mnemonics2bloomberg[option_mnemonic]);
+                        command.Parameters.AddWithValue("strike", Convert.ToDouble(ees_mnemonics2strike[option_mnemonic]));
+                        command.Parameters.AddWithValue("bid", -99.0);
+                        command.Parameters.AddWithValue("bid_volume", -99.0);
+                        command.Parameters.AddWithValue("ask", -99.0);
+                        command.Parameters.AddWithValue("ask_volume", -99.0);
+                        command.Parameters.AddWithValue("value", -99.0);
+                        command.Parameters.AddWithValue("last_trade_value", -99.0);
+                        command.Parameters.AddWithValue("last_trade_volume", -99.0);
+                        command.Parameters.AddWithValue("vol", -99.0);
+                        command.Parameters.AddWithValue("delta", -99.0);
+                        command.Parameters.AddWithValue("expiry_date", row["expiry_date"]);
+                        command.Parameters.AddWithValue("time_to_expiry", -99.0);
+                        command.Parameters.AddWithValue("last_updated", "1900-01-01 00:00:00");
+                        command.ExecuteNonQuery();
 
+                        CStructureDataStore StructureDS = _clientAPIManagement.GetStructureDataStore();
+                        CStructureItem pItem1 = StructureDS.FindOrCreateItem(option_mnemonic);
+                        pItem1.RegisterInterest();
+                    }
+                }
             }
 
 
@@ -392,8 +439,18 @@ namespace EESTesterClientAPI
                 dgvPrices["AskVolume", index].Value = AskVolume;
                 dgvPrices["LastTrade", index].Value = LastTrade;
                 DateTime Now = DateTime.Now;
+                
+                if (sTe.StartsWith("EBF"))
+                {
+                    updateFutureDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
+                }
+                else if (sTe.StartsWith("EBO"))
+                {
+                    updateOptionDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
+                }
 
-                updateFutureDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
+
+
 
             }
             
