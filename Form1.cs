@@ -153,7 +153,7 @@ namespace EESTesterClientAPI
         {
 
 
-            if (sItem.StructureItem.Symbol != null && sItem.StructureItem.IsTradeableEntity == true && sItem.StructureItem.SecurityType == "FUT" && sItem.StructureItem.StrategyCode == null)
+            if (sItem.StructureItem.Symbol != null && sItem.StructureItem.IsTradeableEntity == true && sItem.StructureItem.StrategyCode == null)
             {
                 if (!dicInstruments.ContainsKey(sItem.StructureItem.Code))
                 {
@@ -268,10 +268,6 @@ namespace EESTesterClientAPI
             {
                 DataRow future = foundFutures[0];
                 var id = future["id"];
-                //List<string> column_headings = (from DataColumn x in _future_table.Columns select x.ColumnName).ToList<string>();
-                //int id_index = (int)column_headings.IndexOf("id");
-                //var id = future.ItemArray[id_index];
-                // do we need to remove and add options? If so, that happens here
                 SQLiteCommand command = new SQLiteCommand(_db_cnn);
                 command.CommandText = "UPDATE marketdata_future SET bid=:bid, bid_volume=:bid_volume, ask=:ask, ask_volume=:ask_volume, value=:value, last_trade_value=:last_trade_value, last_trade_volume=:last_trade_volume, last_updated=:last_updated WHERE id=:id";
                 command.Parameters.AddWithValue("bid", Bid);
@@ -307,6 +303,29 @@ namespace EESTesterClientAPI
             }
             return possible_atms[distance.IndexOf(distance.Min())];
         }
+
+        private void updateOptionDb(string sTe, double Bid, double BidVolume, double Ask, double AskVolume, double LastTrade, double LastTradeVol, DateTime Now)
+        {
+            DataRow[] foundOptions = _optioncontract_table.Select("easy_screen_mnemonic = '" + sTe + "'");
+            if (foundOptions.Length == 1)
+            {
+                DataRow option = foundOptions[0];
+                var id = option["id"];
+                SQLiteCommand command = new SQLiteCommand(_db_cnn);
+                command.CommandText = "UPDATE marketdata_future SET bid=:bid, bid_volume=:bid_volume, ask=:ask, ask_volume=:ask_volume, value=:value, last_trade_value=:last_trade_value, last_trade_volume=:last_trade_volume, last_updated=:last_updated WHERE id=:id";
+                command.Parameters.AddWithValue("bid", Bid);
+                command.Parameters.AddWithValue("bid_volume", BidVolume);
+                command.Parameters.AddWithValue("ask", Ask);
+                command.Parameters.AddWithValue("ask_volume", AskVolume);
+                command.Parameters.AddWithValue("value", (Bid + Ask)/2.0);
+                command.Parameters.AddWithValue("last_trade_value", LastTrade);
+                command.Parameters.AddWithValue("last_trade_volume", LastTradeVol);
+                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("last_updated", Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                command.ExecuteNonQuery();
+            }
+        }
+
 
         private void updateOptionDb(string future_id, double value)
         {
@@ -449,9 +468,6 @@ namespace EESTesterClientAPI
                     updateOptionDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
                 }
 
-
-
-
             }
             
         }
@@ -490,12 +506,6 @@ namespace EESTesterClientAPI
 
         private void _AutoSubscribe()
         {
-            /*
-            XmlDocument xDoc = new XmlDocument();
-            xDoc.Load(EESTesterClientAPI.Properties.Settings.Default.XMLFile);
-            XmlNode root = xDoc.DocumentElement;
-            XmlNodeList name = xDoc.GetElementsByTagName("contract");
-            */
             // load the futures
             SQLiteCommand command = new SQLiteCommand(_db_cnn);
             command.CommandText = "SELECT * FROM marketdata_future";
@@ -503,13 +513,13 @@ namespace EESTesterClientAPI
             _future_table.Load(reader);
             reader.Close();
             DateTime Now = DateTime.Now;
+
             foreach (DataRow r in _future_table.Rows)
             {
                 int diff = DateTime.Compare(Now, Convert.ToDateTime(r["expiry_date"]));
                 if (diff <= 0)
                 {
                     // subscribe future
-                    string delete = r["easyscreen_id"].ToString();
                     Subscribe(r["easyscreen_id"].ToString());
 
                     // now find all the option defs based on subscribed future
@@ -523,22 +533,19 @@ namespace EESTesterClientAPI
                 }
             }
             // load the options
-//            command = new SQLiteCommand(_db_cnn);
-//            command.CommandText = "SELECT id, easyscreen_id, bid, bid_volume, ask, ask_volume, last_trade_value, last_trade_volume, last_updated, expiry_date FROM marketdata_future";
-//            SQLiteDataReader reader = command.ExecuteReader();
-//            _future_table.Load(reader);
-//            reader.Close();
-//            foreach (DataRow r in _future_table.Rows)
-//            {
-//                Subscribe(r["easyscreen_id"].ToString());
-//            }
-            /*
-
-            foreach (XmlNode contract in name)
+            command = new SQLiteCommand(_db_cnn);
+            command.CommandText = "SELECT * FROM marketdata_optioncontract";
+            command.ExecuteReader();
+            _optioncontract_table.Load(reader);
+            reader.Close();
+            foreach (DataRow r in _optioncontract_table.Rows)
             {
-                Subscribe(contract.InnerText);
+                int diff = DateTime.Compare(Now, Convert.ToDateTime(r["expiry_date"]));
+                if (diff <= 0)
+                {
+                    Subscribe(r["easyscreen_id"].ToString());
+                }
             }
-            */
         }
 
         private void Subscribe(string sCommodity)
