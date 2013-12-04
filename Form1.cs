@@ -306,13 +306,22 @@ namespace EESTesterClientAPI
 
         private void updateOptionDb(string sTe, double Bid, double BidVolume, double Ask, double AskVolume, double LastTrade, double LastTradeVol, DateTime Now)
         {
-            DataRow[] foundOptions = _optioncontract_table.Select("easy_screen_mnemonic = '" + sTe + "'");
-            if (foundOptions.Length == 1)
+            //DataRow[] foundOptions = _optioncontract_table.Select("easy_screen_mnemonic = '" + sTe + "'");
+
+            SQLiteCommand command = new SQLiteCommand(_db_cnn);
+            command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE easy_screen_mnemonic=:easy_screen_mnemonic";
+            command.Parameters.AddWithValue("easy_screen_mnemonic", sTe);
+            SQLiteDataReader reader = command.ExecuteReader();
+            DataTable foundOptions = new DataTable();
+            foundOptions.Load(reader);
+            reader.Close();
+
+            if (foundOptions.Rows.Count == 1)
             {
-                DataRow option = foundOptions[0];
+                DataRow option = foundOptions.Rows[0];
                 var id = option["id"];
-                SQLiteCommand command = new SQLiteCommand(_db_cnn);
-                command.CommandText = "UPDATE marketdata_future SET bid=:bid, bid_volume=:bid_volume, ask=:ask, ask_volume=:ask_volume, value=:value, last_trade_value=:last_trade_value, last_trade_volume=:last_trade_volume, last_updated=:last_updated WHERE id=:id";
+                //SQLiteCommand command = new SQLiteCommand(_db_cnn);
+                command.CommandText = "UPDATE marketdata_optioncontract SET bid=:bid, bid_volume=:bid_volume, ask=:ask, ask_volume=:ask_volume, value=:value, last_trade_value=:last_trade_value, last_trade_volume=:last_trade_volume, last_updated=:last_updated WHERE id=:id";
                 command.Parameters.AddWithValue("bid", Bid);
                 command.Parameters.AddWithValue("bid_volume", BidVolume);
                 command.Parameters.AddWithValue("ask", Ask);
@@ -320,7 +329,7 @@ namespace EESTesterClientAPI
                 command.Parameters.AddWithValue("value", (Bid + Ask)/2.0);
                 command.Parameters.AddWithValue("last_trade_value", LastTrade);
                 command.Parameters.AddWithValue("last_trade_volume", LastTradeVol);
-                command.Parameters.AddWithValue("id", id);
+                command.Parameters.AddWithValue("id", Convert.ToInt32(option["id"]));
                 command.Parameters.AddWithValue("last_updated", Now.ToString("yyyy-MM-dd HH:mm:ss"));
                 command.ExecuteNonQuery();
             }
@@ -533,9 +542,9 @@ namespace EESTesterClientAPI
                 }
             }
             // load the options
-            command = new SQLiteCommand(_db_cnn);
+            //command = new SQLiteCommand(_db_cnn);
             command.CommandText = "SELECT * FROM marketdata_optioncontract";
-            command.ExecuteReader();
+            reader = command.ExecuteReader();
             _optioncontract_table.Load(reader);
             reader.Close();
             foreach (DataRow r in _optioncontract_table.Rows)
@@ -543,7 +552,7 @@ namespace EESTesterClientAPI
                 int diff = DateTime.Compare(Now, Convert.ToDateTime(r["expiry_date"]));
                 if (diff <= 0)
                 {
-                    Subscribe(r["easyscreen_id"].ToString());
+                    Subscribe(r["easy_screen_mnemonic"].ToString());
                 }
             }
         }
