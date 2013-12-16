@@ -13,6 +13,7 @@ using System.Data.SQLite;
 
 namespace EESTesterClientAPI
 {
+
     public partial class Form1 : Form
     {
         int index = 0;
@@ -32,8 +33,7 @@ namespace EESTesterClientAPI
         private DataTable _future_table = new DataTable();
         private Dictionary<string, DataTable> _future_ids_2_optiondefs = new Dictionary<string, DataTable>();
         private DataTable _optiondef_table = new DataTable();
-        private DataTable _optioncontract_table = new DataTable();
-
+        //BackgroundWorker _worker = new BackgroundWorker();
 
 
         public Form1()
@@ -56,6 +56,7 @@ namespace EESTesterClientAPI
             }
 
             InitializeComponent();
+            this.Text = "EESDataFetcher";
             dicDepth = new Dictionary<string, DepthScreen>();
 
         }
@@ -306,7 +307,6 @@ namespace EESTesterClientAPI
 
         private void updateOptionDb(string sTe, double Bid, double BidVolume, double Ask, double AskVolume, double LastTrade, double LastTradeVol, DateTime Now)
         {
-            //DataRow[] foundOptions = _optioncontract_table.Select("easy_screen_mnemonic = '" + sTe + "'");
 
             SQLiteCommand command = new SQLiteCommand(_db_cnn);
             command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE easy_screen_mnemonic=:easy_screen_mnemonic";
@@ -389,12 +389,13 @@ namespace EESTesterClientAPI
                 command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE optiondefinition_id=:optiondefinition_id";
                 command.Parameters.AddWithValue("optiondefinition_id", Convert.ToInt32(row["id"]));                
                 SQLiteDataReader reader = command.ExecuteReader();
-                _optioncontract_table.Clear();
-                _optioncontract_table.Load(reader);
+                DataTable optioncontract_table = new DataTable();
+                optioncontract_table.Clear();
+                optioncontract_table.Load(reader);
                 reader.Close();
 
                 // remove all options that we don't need to fetch anymore
-                foreach (DataRow option in _optioncontract_table.Rows)
+                foreach (DataRow option in optioncontract_table.Rows)
                 {
                     if (!ees_mnemonics.Contains(option["easy_screen_mnemonic"].ToString()))
                     {
@@ -467,14 +468,18 @@ namespace EESTesterClientAPI
                 dgvPrices["AskVolume", index].Value = AskVolume;
                 dgvPrices["LastTrade", index].Value = LastTrade;
                 DateTime Now = DateTime.Now;
-                
+
+                BackgroundWorker worker = new BackgroundWorker();
+
                 if (sTe.StartsWith("EBF"))
                 {
-                    updateFutureDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
+                    worker.DoWork += (obj, e) => updateFutureDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
+                    worker.RunWorkerAsync();
                 }
                 else if (sTe.StartsWith("EBO"))
                 {
-                    updateOptionDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
+                    worker.DoWork += (obj, e) => updateOptionDb(sTe, Bid, BidVolume, Ask, AskVolume, LastTrade, LastTradeVol, Now);
+                    worker.RunWorkerAsync();
                 }
 
             }
@@ -545,9 +550,10 @@ namespace EESTesterClientAPI
             //command = new SQLiteCommand(_db_cnn);
             command.CommandText = "SELECT * FROM marketdata_optioncontract";
             reader = command.ExecuteReader();
-            _optioncontract_table.Load(reader);
+            DataTable optioncontract_table = new DataTable();
+            optioncontract_table.Load(reader);
             reader.Close();
-            foreach (DataRow r in _optioncontract_table.Rows)
+            foreach (DataRow r in optioncontract_table.Rows)
             {
                 int diff = DateTime.Compare(Now, Convert.ToDateTime(r["expiry_date"]));
                 if (diff <= 0)
