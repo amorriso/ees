@@ -1,12 +1,8 @@
-C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EESTesterClientAPI.exe.config
 C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESTesterClientAPI.DepthScreen.resources
 C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESTesterClientAPI.Form1.resources
-C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESTesterClientAPI.Properties.Resources.resources
 C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESTesterClientAPI.ReviseOrder.resources
 C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESClientAPI.csproj.GenerateResource.Cache
 C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESClientAPI.csprojResolveAssemblyReference.cache
-C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EESTesterClientAPI.exe
-C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EESTesterClientAPI.pdb
 C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\ClientAPI.dll
 C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\DotNetUtils.dll
 C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EasyScreen.SOA2.GenericRequest.dll
@@ -18,6 +14,11 @@ C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EasyScreen.SOA2.Exception
 C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EasyScreen.SOA2.SqlSupport.BOExchange.dll
 C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EasyScreen.SOA2.SqlSupport.Soda.dll
 C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\ClientAPI.xml
-C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESTesterClientAPI.exe
-C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESTesterClientAPI.pdb
 C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\System.Data.SQLite.xml
+C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EESDataFetcher.exe.config
+C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EESDataFetcher.exe
+C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\EESDataFetcher.pdb
+C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESDataFetcher.Properties.Resources.resources
+C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESDataFetcher.exe
+C:\cygwin\home\amorriso\www\gareth\ees\obj\x86\Release\EESDataFetcher.pdb
+C:\cygwin\home\amorriso\www\gareth\ees\bin\x86\Release\mysql.data.dll

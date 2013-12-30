@@ -32,14 +32,7 @@ namespace EESTesterClientAPI
         private bool _subscribed = false;
         private DataTable _future_table = new DataTable();
         private Dictionary<string, DataTable> _future_ids_2_optiondefs = new Dictionary<string, DataTable>();
-        private Dictionary<string, bool> _cleaned_optiondefs = new Dictionary<string, bool>();
-        private Dictionary<string, string> _database_events = new Dictionary<string, string>();
-        private Dictionary<string, string> _database_add_event = new Dictionary<string, string>();
-        private Dictionary<string, DataTable> _optiondef2optioncontracts = new Dictionary<string, DataTable>();
-        private Dictionary<string, int> _mnemonic2optioncontractid = new Dictionary<string, int>();
-        private bool _database_dict_locked = false;
         private DataTable _optiondef_table = new DataTable();
-
         //BackgroundWorker _worker = new BackgroundWorker();
 
         //private SQLiteConnection _db_cnn;
@@ -280,10 +273,23 @@ namespace EESTesterClientAPI
             if (foundFutures.Length == 1)
             {
                 DataRow future = foundFutures[0];
-                string id = Convert.ToString(future["id"]);
-                string command = "UPDATE marketdata_future SET bid=" + Convert.ToString(Bid) + ", bid_volume=" + Convert.ToString(BidVolume) + ", ask=" + Convert.ToString(Ask) + ", ask_volume=" + Convert.ToString(AskVolume) + ", value=" + Convert.ToString((Bid + Ask)/2.0) + ", last_trade_value=" + Convert.ToString(LastTrade) + ", last_trade_volume=" + Convert.ToString(LastTradeVol) + ", last_updated='" + Convert.ToString(Now.ToString("yyyy-MM-dd HH:mm:ss")) + "' WHERE id=" + Convert.ToString(id) + "";
-                update_db_events("marketdata_future_" + id, (string)command.Clone());
-                updateOptionDb(id, (Bid + Ask)/2.0);
+                var id = future["id"];
+                //SQLiteCommand command = new SQLiteCommand(_db_cnn);
+                MySqlCommand command = new MySqlCommand();
+                command.Connection = _db_cnn;
+                command.CommandText = "UPDATE marketdata_future SET bid=@bid, bid_volume=@bid_volume, ask=@ask, ask_volume=@ask_volume, value=@value, last_trade_value=@last_trade_value, last_trade_volume=@last_trade_volume, last_updated=@last_updated WHERE id=@id";
+                command.Parameters.Clear();
+                command.Parameters.AddWithValue("@bid", Bid);
+                command.Parameters.AddWithValue("@bid_volume", BidVolume);
+                command.Parameters.AddWithValue("@ask", Ask);
+                command.Parameters.AddWithValue("@ask_volume", AskVolume);
+                command.Parameters.AddWithValue("@value", (Bid + Ask)/2.0);
+                command.Parameters.AddWithValue("@last_trade_value", LastTrade);
+                command.Parameters.AddWithValue("@last_trade_volume", LastTradeVol);
+                command.Parameters.AddWithValue("@id", id);
+                command.Parameters.AddWithValue("@last_updated", Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                command.ExecuteNonQuery();
+                updateOptionDb(Convert.ToString(id), (Bid + Ask)/2.0);
             }
         }
 
@@ -315,13 +321,36 @@ namespace EESTesterClientAPI
         private void updateOptionDb(string sTe, double Bid, double BidVolume, double Ask, double AskVolume, double LastTrade, double LastTradeVol, DateTime Now)
         {
 
-            if (_mnemonic2optioncontractid.ContainsKey(sTe))
+            //SQLiteCommand command = new SQLiteCommand(_db_cnn);
+            MySqlCommand command = new MySqlCommand();
+            command.Connection = _db_cnn;
+            command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE easy_screen_mnemonic=@easy_screen_mnemonic";
+            command.Parameters.Clear();
+            command.Parameters.AddWithValue("@easy_screen_mnemonic", sTe);
+            //SQLiteDataReader reader = command.ExecuteReader();
+            MySqlDataReader reader = command.ExecuteReader();
+            DataTable foundOptions = new DataTable();
+            foundOptions.Load(reader);
+            reader.Close();
+
+            if (foundOptions.Rows.Count == 1)
             {
-                int id = _mnemonic2optioncontractid[sTe];
-                string command = "UPDATE marketdata_optioncontract SET bid=" + Convert.ToString(Bid) + ", bid_volume=" + Convert.ToString(BidVolume) + ", ask=" + Convert.ToString(Ask) + ", ask_volume=" + Convert.ToString(AskVolume) + ", value=" + Convert.ToString((Bid + Ask) / 2.0) + ", last_trade_value=" + Convert.ToString(LastTrade) + ", last_trade_volume=" + Convert.ToString(LastTradeVol) + ", last_updated='" + Convert.ToString(Now.ToString("yyyy-MM-dd HH:mm:ss")) + "' WHERE id=" + Convert.ToString(id);
-                update_db_events("marketdata_optioncontract_" + Convert.ToString(id), (string)command.Clone());
+                DataRow option = foundOptions.Rows[0];
+                var id = option["id"];
+                //SQLiteCommand command = new SQLiteCommand(_db_cnn);
+                command.CommandText = "UPDATE marketdata_optioncontract SET bid=@bid, bid_volume=@bid_volume, ask=@ask, ask_volume=@ask_volume, value=@value, last_trade_value=@last_trade_value, last_trade_volume=@last_trade_volume, last_updated=@last_updated WHERE id=@id";
+                command.Parameters.Clear();
+                command.Parameters.AddWithValue("@bid", Bid);
+                command.Parameters.AddWithValue("@bid_volume", BidVolume);
+                command.Parameters.AddWithValue("@ask", Ask);
+                command.Parameters.AddWithValue("@ask_volume", AskVolume);
+                command.Parameters.AddWithValue("@value", (Bid + Ask)/2.0);
+                command.Parameters.AddWithValue("@last_trade_value", LastTrade);
+                command.Parameters.AddWithValue("@last_trade_volume", LastTradeVol);
+                command.Parameters.AddWithValue("@id", Convert.ToInt32(option["id"]));
+                command.Parameters.AddWithValue("@last_updated", Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                command.ExecuteNonQuery();
             }
-            
         }
 
 
@@ -341,11 +370,24 @@ namespace EESTesterClientAPI
             double strike_interval;
             //SQLiteCommand command = new SQLiteCommand(_db_cnn);
             MySqlCommand command = new MySqlCommand();
+            command.Connection = _db_cnn;
+
 
             // get our option defintions (there could be up to 3 of these 
             // per future id. these define collections of options (with
             // different strikes)
+            
             DataTable optiondefs = _future_ids_2_optiondefs[future_id];
+
+            // now find all the option defs based on subscribed future
+            //command.CommandText = "SELECT * FROM marketdata_optiondefinition WHERE future_id=@future_id";
+            //command.Parameters.Clear();
+            //command.Parameters.AddWithValue("@future_id", future_id.ToString());
+            ////SQLiteDataReader reader = command.ExecuteReader();
+            //MySqlDataReader reader = command.ExecuteReader();
+            //DataTable optiondefs = new DataTable();
+            //optiondefs.Load(reader);
+            //reader.Close();
 
             // for each option defintion
             foreach (DataRow row in optiondefs.Rows)
@@ -383,54 +425,76 @@ namespace EESTesterClientAPI
                     counter += 1;
                 }
 
-                DataTable optioncontract_table = _optiondef2optioncontracts[Convert.ToString(row["id"])];
+                command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE optiondefinition_id=@optiondefinition_id";
+                command.Parameters.Clear();
+                command.Parameters.AddWithValue("@optiondefinition_id", Convert.ToInt32(row["id"]));
+                MySqlDataReader reader = command.ExecuteReader();
+                //reader = command.ExecuteReader();
+                DataTable optioncontract_table = new DataTable();
+                optioncontract_table.Clear();
+                optioncontract_table.Load(reader);
+                reader.Close();
 
                 // remove all options that we don't need to fetch anymore
                 foreach (DataRow option in optioncontract_table.Rows)
                 {
-                    if (!ees_mnemonics.Contains(option["easy_screen_mnemonic"].ToString()) && !_cleaned_optiondefs[Convert.ToString(row["id"])])
+                    if (!ees_mnemonics.Contains(option["easy_screen_mnemonic"].ToString()))
                     {
-                        command.Connection = _db_cnn;
-                        command.Parameters.Clear();
                         command.CommandText = "DELETE FROM marketdata_optioncontract WHERE id=@id";
-                        command.Parameters.AddWithValue("@id", Convert.ToString(option["id"]));
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@id", Convert.ToInt32(option["id"]));
                         command.ExecuteNonQuery();
-
-                        // we now require that options be successfully deleted from database, only once a day should this happen
-                        CStructureDataStore StructureDS = _clientAPIManagement.GetStructureDataStore();
-                        CStructureItem pItem1 = StructureDS.FindOrCreateItem(option["easy_screen_mnemonic"].ToString());
-                        pItem1.UnregisterInterest();
+                        try
+                        {
+                            CStructureDataStore StructureDS = _clientAPIManagement.GetStructureDataStore();
+                            CStructureItem pItem1 = StructureDS.FindOrCreateItem(option["easy_screen_mnemonic"].ToString());
+                            pItem1.UnregisterInterest();
+                        }
+                        catch
+                        {
+                            // don't worry about this failing.
+                        }
                     }
                     else
                     {
                         registered_ees_mnemonics.Add(option["easy_screen_mnemonic"].ToString());
                     }
                 }
-
-                _cleaned_optiondefs[Convert.ToString(row["id"])] = true;
-
                 // add options that we now need to fetch that we weren't already fetching
-                string add_event = null;
-                string expiry_date = null;
                 foreach (string option_mnemonic in ees_mnemonics)
                 {
                     if (!registered_ees_mnemonics.Contains(option_mnemonic))
                     {
-                        expiry_date = Convert.ToDateTime(row["expiry_date"]).ToString("yyyy-MM-dd HH:mm:ss");
-                        add_event = "INSERT INTO marketdata_optioncontract (optiondefinition_id, easy_screen_mnemonic, bloomberg_name, strike, bid, bid_volume, ask, ask_volume, value, last_trade_value, last_trade_volume, vol, delta, expiry_date, time_to_expiry, last_updated) VALUES (" + Convert.ToString(Convert.ToString(row["id"])) + ", '" + Convert.ToString(option_mnemonic) + "', '" + Convert.ToString(ees_mnemonics2bloomberg[option_mnemonic]) + "', " + Convert.ToString(Convert.ToDouble(ees_mnemonics2strike[option_mnemonic])) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", " + Convert.ToString(-99.0) + ", '" + expiry_date + "', " + Convert.ToString(-99.0) + ", '1900-01-01 00:00:00')";
+                        command.CommandText = "INSERT INTO marketdata_optioncontract (optiondefinition_id, easy_screen_mnemonic, bloomberg_name, strike, bid, bid_volume, ask, ask_volume, value, last_trade_value, last_trade_volume, vol, delta, expiry_date, time_to_expiry, last_updated) VALUES (@optiondefinition_id, @easy_screen_mnemonic, @bloomberg_name, @strike, @bid, @bid_volume, @ask, @ask_volume, @value, @last_trade_value, @last_trade_volume, @vol, @delta, @expiry_date, @time_to_expiry, @last_updated)";
 
-                        if (!_database_add_event.ContainsKey(option_mnemonic))
-                        {
-                            _database_add_event.Add(option_mnemonic, (string)add_event.Clone());
-                        }
-                        //command.ExecuteNonQuery();
+                        command.Parameters.Clear();
+                        command.Parameters.AddWithValue("@optiondefinition_id", Convert.ToInt32(row["id"]));
+                        command.Parameters.AddWithValue("@easy_screen_mnemonic", option_mnemonic);
+                        command.Parameters.AddWithValue("@bloomberg_name", ees_mnemonics2bloomberg[option_mnemonic]);
+                        command.Parameters.AddWithValue("@strike", Convert.ToDouble(ees_mnemonics2strike[option_mnemonic]));
+                        command.Parameters.AddWithValue("@bid", -99.0);
+                        command.Parameters.AddWithValue("@bid_volume", -99.0);
+                        command.Parameters.AddWithValue("@ask", -99.0);
+                        command.Parameters.AddWithValue("@ask_volume", -99.0);
+                        command.Parameters.AddWithValue("@value", -99.0);
+                        command.Parameters.AddWithValue("@last_trade_value", -99.0);
+                        command.Parameters.AddWithValue("@last_trade_volume", -99.0);
+                        command.Parameters.AddWithValue("@vol", -99.0);
+                        command.Parameters.AddWithValue("@delta", -99.0);
+                        command.Parameters.AddWithValue("@expiry_date", row["expiry_date"]);
+                        command.Parameters.AddWithValue("@time_to_expiry", -99.0);
+                        command.Parameters.AddWithValue("@last_updated", "1900-01-01 00:00:00");
+                        command.ExecuteNonQuery();
 
-                        //CStructureDataStore StructureDS = _clientAPIManagement.GetStructureDataStore();
-                        //CStructureItem pItem1 = StructureDS.FindOrCreateItem(option_mnemonic);
-                        //pItem1.RegisterInterest();
+                        CStructureDataStore StructureDS = _clientAPIManagement.GetStructureDataStore();
+                        CStructureItem pItem1 = StructureDS.FindOrCreateItem(option_mnemonic);
+                        pItem1.RegisterInterest();
                     }
                 }
             }
+
+
+
         }
 
         private void updatePriceGrid(string sTe, double BidVolume, double Bid, double Ask, double AskVolume, double LastTrade, double LastTradeVol)
@@ -449,7 +513,7 @@ namespace EESTesterClientAPI
                 dgvPrices["LastTrade", index].Value = LastTrade;
                 DateTime Now = DateTime.Now;
 
-                //BackgroundWorker worker = new BackgroundWorker();
+                BackgroundWorker worker = new BackgroundWorker();
 
                 if (sTe.StartsWith("EBF"))
                 {
@@ -535,205 +599,17 @@ namespace EESTesterClientAPI
             // load the options
             //command = new SQLiteCommand(_db_cnn);
             command.CommandText = "SELECT * FROM marketdata_optioncontract";
-            command.Parameters.Clear();
             reader = command.ExecuteReader();
             DataTable optioncontract_table = new DataTable();
             optioncontract_table.Load(reader);
+            reader.Close();
             foreach (DataRow r in optioncontract_table.Rows)
             {
                 int diff = DateTime.Compare(Now, Convert.ToDateTime(r["expiry_date"]));
                 if (diff <= 0)
                 {
-                    if (!_mnemonic2optioncontractid.ContainsKey(Convert.ToString(r["easy_screen_mnemonic"])))
-                    {
-                        _mnemonic2optioncontractid.Add(Convert.ToString(r["easy_screen_mnemonic"]), Convert.ToInt32(r["id"]));
-                    }
-                    else
-                    {
-                        _mnemonic2optioncontractid[Convert.ToString(r["easy_screen_mnemonic"])] = Convert.ToInt32(r["id"]);
-                    }
                     Subscribe(r["easy_screen_mnemonic"].ToString());
                 }
-            }
-
-            // get our option definitions we need to store all these so that we know 
-            // to clean the option contract strikes at least once per day
-            command.CommandText = "SELECT * FROM marketdata_optiondefinition";
-            command.Parameters.Clear();
-            reader = command.ExecuteReader();
-            DataTable optiondefinition_table = new DataTable();
-            optiondefinition_table.Load(reader);
-            foreach (DataRow r in optiondefinition_table.Rows)
-            {
-                int diff = DateTime.Compare(Now, Convert.ToDateTime(r["expiry_date"]));
-                if (diff <= 0)
-                {
-                    if (!_cleaned_optiondefs.ContainsKey(Convert.ToString(r["id"])))
-                    {
-                        _cleaned_optiondefs.Add(Convert.ToString(r["id"]), false);
-                        
-                        command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE optiondefinition_id=@optiondefinition_id";
-                        command.Parameters.Clear();
-                        command.Parameters.AddWithValue("@optiondefinition_id", Convert.ToString(r["id"]));
-                        DataTable refined_optioncontract_table = new DataTable();
-                        reader = command.ExecuteReader();
-                        refined_optioncontract_table.Load(reader);
-                        _optiondef2optioncontracts.Add(Convert.ToString(r["id"]), refined_optioncontract_table);
-                    }
-                }
-            }
-
-            reader.Close();
-            
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += (obj, e) => update_db();
-            worker.RunWorkerAsync();
-            
-
-        }
-
-
-        private void update_db()
-        {
-
-            MySqlCommand command = new MySqlCommand();
-            command.Connection = _db_cnn;
-            // add stuff to db
-            while (true)
-            {
-                System.Threading.Thread.Sleep(3000);
-                 if (!_database_dict_locked)
-                {
-                    _database_dict_locked = true;
-
-                    if (_database_add_event.Count > 0)
-                    {
-                        foreach (KeyValuePair<string, string> entry in _database_add_event)
-                        {
-                            command.CommandText = entry.Value;
-                            int rows_effected = command.ExecuteNonQuery();
-                        }
-            
-                        // update the _mnemonic2optioncontractid map
-                        command.CommandText = "SELECT * FROM marketdata_optioncontract";
-                        command.Parameters.Clear();
-                        MySqlDataReader reader = command.ExecuteReader();
-                        //reader = command.ExecuteReader();
-                        DataTable optioncontract_table = new DataTable();
-                        optioncontract_table.Load(reader);
-            
-                        foreach (DataRow r in optioncontract_table.Rows)
-                        {
-                            if (!_mnemonic2optioncontractid.ContainsKey(Convert.ToString(r["easy_screen_mnemonic"])))
-                            {
-                                _mnemonic2optioncontractid.Add(Convert.ToString(r["easy_screen_mnemonic"]), Convert.ToInt32(r["id"]));
-                            }
-                            else
-                            {
-                                _mnemonic2optioncontractid[Convert.ToString(r["easy_screen_mnemonic"])] = Convert.ToInt32(r["id"]);
-                            }
-                        }
-    
-                        foreach (KeyValuePair<string, DataTable> entry in _future_ids_2_optiondefs)
-                        {
-                            DataTable optiondefs = entry.Value;
-                            foreach (DataRow row in optiondefs.Rows)
-                            {
-                                command.Parameters.Clear();
-                                command.CommandText = "SELECT * FROM marketdata_optioncontract WHERE optiondefinition_id=@optiondefinition_id";
-                                command.Parameters.AddWithValue("@optiondefinition_id", Convert.ToString(row["id"]));
-                                DataTable refined_optioncontract_table = new DataTable();
-                                reader = command.ExecuteReader();
-                                refined_optioncontract_table.Load(reader);
-                                
-                                // now we need to check the refined_optioncontract_table for double ups (EES mnemonics/strikes), 
-                                // if there are double ups we need to remove them from the refined_optioncontract_table and from the 
-                                // database itself.
-                                HashSet<string> mnemonic_set = new HashSet<string>();
-                                List<int> delete_positions = new List<int>();
-                                List<int> delete_table_ids = new List<int>();
-                                
-                                int pos = 0;
-                                foreach (DataRow check_row in refined_optioncontract_table.Rows)
-                                {
-                                    if (mnemonic_set.Contains(Convert.ToString(check_row["easy_screen_mnemonic"])))
-                                    {
-                                        delete_positions.Add(pos);
-                                        delete_table_ids.Add(Convert.ToInt32(check_row["id"]));
-                                    }
-                                    else
-                                    {
-                                        mnemonic_set.Add(Convert.ToString(check_row["easy_screen_mnemonic"]));
-                                    }
-                                    pos += 1;
-                                }
-                                if (delete_positions.Count > 0)
-                                {
-                                    delete_positions.Reverse();
-                                    delete_table_ids.Reverse();
-                                    for (int i = 0; i < delete_positions.Count; i++)
-                                    {
-                                        refined_optioncontract_table.Rows[delete_positions[i]].Delete();
-                                        command.Parameters.Clear();
-                                        command.CommandText = "DELETE FROM marketdata_optioncontract WHERE id=@id";
-                                        command.Parameters.AddWithValue("@id", Convert.ToString(delete_table_ids[i]));
-                                        command.ExecuteNonQuery();
-                                    }
-                                }
-
-                                if (!_optiondef2optioncontracts.ContainsKey(Convert.ToString(row["id"])))
-                                {
-                                    _optiondef2optioncontracts.Add(Convert.ToString(row["id"]), refined_optioncontract_table);
-                                }
-                                else
-                                {
-                                    _optiondef2optioncontracts[Convert.ToString(row["id"])] = refined_optioncontract_table;
-                                }
-                            }
-                        }
-                        
-            
-                        // now subscribe, only subscribe after the dbs been modified and the _mnemonic2optioncontractid has been updated. I was getting 
-                        // a key error before
-                        foreach (KeyValuePair<string, string> entry in _database_add_event)
-                        {
-                            Subscribe(entry.Key);
-                        }
-    
-                        _database_add_event.Clear();
-                    }
-
-                    foreach (KeyValuePair<string, string> entry in _database_events)
-                    {
-                        command.CommandText = entry.Value;
-                        command.Connection = _db_cnn;
-                        command.ExecuteNonQuery();
-                    }
-
-                    _database_events.Clear();
-                    _database_dict_locked = false;
-                }
-
-            }
-
-            
-        }
-
-
-        private void update_db_events(string id, string command)
-        {
-            if (!_database_dict_locked)
-            {
-                _database_dict_locked = true;
-                if (!_database_events.ContainsKey(id))
-                {
-                    _database_events.Add(id, command);
-                }
-                else
-                {
-                    _database_events[id] = command; 
-                }
-                _database_dict_locked = false;
             }
         }
 
