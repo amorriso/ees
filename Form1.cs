@@ -293,7 +293,8 @@ namespace EESTesterClientAPI
             //List<double> possible_atms = new List<double>();
             //List<double> distance = new List<double>();
 
-            double val = Convert.ToDouble(Convert.ToInt32(value)) - 2 * strike_interval;
+            //double val = Convert.ToDouble(Convert.ToInt32(value)) - 2 * strike_interval;
+            double val = (double)Convert.ToInt32((value - 2 * strike_interval) / strike_interval) * strike_interval;
             double old_dist = 1000000000.00;
             double new_dist = old_dist;
 
@@ -361,7 +362,10 @@ namespace EESTesterClientAPI
                 // create the easy screen mnemonics
                 while (true)
                 {
-                    bloomberg_postfix = (Convert.ToInt32(val/Convert.ToDouble(row["price_movement"]))).ToString();
+                    // I used to believe the price_movement was required to create the EES mnemonic. It isn't. To create the menmonic
+                    // you simply convert multiply the value by 100 (or equally as is done below divide by 0.01).
+                    //bloomberg_postfix = (Convert.ToInt32(val / Convert.ToDouble(row["price_movement"]))).ToString();
+                    bloomberg_postfix = (Convert.ToInt32(val / 0.01)).ToString(); 
                     if (val < atm_strike)
                     {
                         bloomberg_postfix += "p";
